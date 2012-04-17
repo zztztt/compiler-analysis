@@ -26,7 +26,7 @@ class fuhao
     }
     void printALL()
     {
-        printf("( %s , %s )\n",s1.c_str(),s2.c_str());
+        printf("( %s , %s )",s1.c_str(),s2.c_str());
     }
     void input(string s1,string s2)
     {
@@ -110,10 +110,14 @@ bool verification_num(string s);//judge the string whether is a double or not
 double stod(string s);//string to double
 int f(string s);
 int g(string s);
+void chansheng(string s);
+bool ferror(string s1,string s2);
+fuhao cal(fuhao s1,fuhao s2,fuhao s3);
 int main()
 {
     FILE *input = fopen("cal","r");
     stack mystack;
+    stack Estack;
     fuhao input_data[100];
     int ii = 0;
     //cifa
@@ -162,9 +166,9 @@ int main()
     printf("\n");
     //yufa
     int i = 0;
+    int numid = 0;
     fuhao last_pop;
     mystack.push("#","#");
-    mystack.printALL();
     while(!(input_data[i].getID() == "#" && mystack.top().getID() == "#"))
     //for(int k = 0 ; k < 25 ; k ++)
     {
@@ -180,10 +184,44 @@ int main()
             do
             {
                 last_pop = mystack.pop();
+                //chansheng(last_pop.getID());
+                if(last_pop.getID() == "id"){
+                    Estack.push(last_pop);
+                    //Estack.printALL();
+                }
+                else if(last_pop.getID() == "+" ||last_pop.getID() == "-"
+                        ||last_pop.getID() == "*" ||last_pop.getID() == "/")
+                        {
+                            fuhao s1 = Estack.pop();
+                            fuhao s2 = Estack.pop();
+                            fuhao r = cal(s2,last_pop,s1);
+                            Estack.push(r);
+                            printf("%s  ",last_pop.getRESULT().c_str());
+                            s2.printALL();
+                            s1.printALL();
+                            r.printALL();
+                            printf("\n");
+                            //Estack.printALL();
+                        }
+                    //Estack.pop(last_pop);
+                //printf("%d\n",numid);
+                if(ferror(mystack.top().getID(),last_pop.getID()))
+                    return 0;
                 //mystack.printALL();
             }
             while(f(mystack.top().getID()) >= g(last_pop.getID()));
         }
+    }
+    fuhao result = Estack.pop();
+    if(!Estack.isempty())
+        printf("There are more OP\n");
+    else
+    {
+        printf("assign ");
+        result.printALL();
+        printf("          ");
+        result.printALL();
+        printf("\n");
     }
     return 0;
 }
@@ -254,4 +292,60 @@ int g(string s)
         return 0;
     else
         return -1;
+}
+void chansheng(string s)
+{
+    if(s == "(" || s == ")" || s =="id")
+    {
+
+    }
+    else if(s == "id")
+        printf("E-> id\n");
+    else if(s == "#")
+        printf("S->E\n");
+    else
+        printf("E -> E %s E\n",s.c_str());
+}
+bool ferror(string s1,string s2)
+{
+    bool r = false;
+    if(s1 == ")" && s2 == "(")
+        r = true;
+    else if(s1 == "id" && s2 == "(")
+        r = true;
+    else if(s1 == ")" && s2 == "id")
+        r = true;
+    else if(s1 == "(" && s2 == "#")
+        r = true;
+    else if(s1 == "#" && s2 == ")")
+        r = true;
+    else
+        r = false;
+    if(r)
+        printf("UNEXCEPT %s behind %s!!\n",s2.c_str(),s1.c_str());
+}
+fuhao cal(fuhao s1,fuhao s2,fuhao s3)
+{
+    fuhao tmp;
+    if(s1.getID() == "id" && s3.getID() == "id"
+       && (s2.getID() == "+" || s2.getID() == "-" || s2.getID() == "*" || s2.getID() == "/"))
+    {
+        double a1 = stod(s1.getRESULT());
+        double a2 = stod(s3.getRESULT());
+        double a3;
+        if(s2.getID() == "+")
+            a3 = a1 + a2;
+        else if(s2.getID() == "-")
+            a3 = a1 - a2;
+        else if(s2.getID() == "*")
+            a3 = a1 * a2;
+        else if(s2.getID() == "/")
+            a3 = a1 / a2;
+        char s4[30];
+        sprintf(s4,"%f",a3);
+         //printf("%s %s %s %s\n",s1.getRESULT().c_str(),s2.getRESULT().c_str(),s3.getRESULT().c_str(),s4);
+        tmp.input("id",string(s4));
+        return tmp;
+    }
+
 }
